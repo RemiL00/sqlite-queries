@@ -21,29 +21,58 @@ carsRouter.get("/", (req, res) => {
 
 // POST add a new car
 carsRouter.post("/", (req, res) => {
-	res.json({
-		msg: "add a new car ... ",
-	})
+	const { carName, carYear, carImage } = req.body
+	db.run(
+		"INSERT INTO cars (carName, carYear, carImage) VALUES (?, ?, ?)",
+		[carName, carYear, carImage],
+		function (err) {
+			if (err) {
+				res.status(500).json({ error: err.message })
+			} else {
+				res.json({ id: this.lastID })
+			}
+		}
+	)
 })
 
 // PUT update a car based on the param id
 carsRouter.put("/:id", (req, res) => {
-	res.json({
-		msg: "update a car based on its id ... ",
-	})
+	const { id } = req.params
+	const { carName, carYear, carImage } = req.body
+	db.run(
+		"UPDATE cars SET carName = ?, carYear = ?, carImage = ? WHERE id = ?",
+		[carName, carYear, carImage, id],
+		function (err) {
+			if (err) {
+				res.status(500).json({ error: err.message })
+			} else {
+				res.json({ changes: this.changes })
+			}
+		}
+	)
 })
 
 // DELETE delete a car based on the param id
 carsRouter.delete("/:id", (req, res) => {
-	res.json({
-		msg: "update a car based on its id ... ",
+	const { id } = req.params
+	db.run("DELETE FROM cars WHERE id = ?", [id], function (err) {
+		if (err) {
+			res.status(500).json({ error: err.message })
+		} else {
+			res.json({ changes: this.changes })
+		}
 	})
 })
 
 // GET one car based on its id
 carsRouter.get("/:id", (req, res) => {
-	res.json({
-		msg: "update a car based on its id ... ",
+	const { id } = req.params // obtenir l'id à partir des paramètres
+	db.get("SELECT * FROM cars WHERE id = ?", [id], (err, row) => {
+		if (err) {
+			res.status(500).json({ error: err.message })
+		} else {
+			res.json(row)
+		}
 	})
 })
 
